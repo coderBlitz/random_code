@@ -1,0 +1,29 @@
+====================
+# Cluster/scatter send (PATRIALLY UNTESTED):
+--------------------
+When each process sends to another "child" process, to get logarithmic send
+ time.
+Steps/ticks required for N processes should be ceil(log2(N))
+Can be drawn as process tree with root ID 1, and each node ID is labelled
+ sequentially from left-to-right row-wise.
+Like so:
+       1
+     /   \
+    2     3
+   / \   / \
+  4   5 6   7
+      ...
+
+--------------------
+Algo:
+--------------------
+Let n processes have IDs [1,n].
+Repeat while next ID is valid/in range:
+	Send to left child (ID 2n)
+
+	Process with ID n != 2^l for some l:
+		"Move"/"traverse" left
+
+	While right child (ID 2n+1) exists:
+		Send to right child
+		"Move"/"traverse" right

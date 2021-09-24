@@ -1,0 +1,4 @@
+Uk9UMTM6SXZ0cmFyZXIgSFpPUFBROkt6a3ZSSk17QjFkd3RoSjNvaDEwYyF9 (base64)
+ROT13:Ivtrarer HZOPPQ:KzkvRJM{B1dwthJ3oh10c!}
+Vigenere UMBCCD:XmxiEWZ{O1qjguW3bu10p!}
+DawgCTF{C1pherC3pt10n!}

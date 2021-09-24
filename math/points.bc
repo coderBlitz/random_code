@@ -1,0 +1,20 @@
+define points(n){
+	auto i,old_scale
+	old_scale = scale
+	i = 0
+	scale = 0
+
+	while(scale <= n){
+		while(1/factorial(i) != 0) i += 1;
+		print scale, ",", i, "\n"
+		scale += 1;
+	}
+
+	scale = old_scale;
+
+	return i
+}
+
+a=points(5000)
+
+halt

@@ -1,0 +1,12 @@
+Parameter passing:
+  First 4 parameters are passed in r0-r3
+  Return value is from r0
+  5th parameter onward is stored at sp, then sp+4, etc.
+
+  Single-precision FP:
+    Operations require '-m fpu=vfp' flag during compilation
+    Parameters are passed in registers s0, s1, etc.
+    Return value is from s0
+    Operations start with 'F'/'f', and some are suffixed with 'S'/'s'
+
+    Op list at 'Vector Floating-point Programming' infocenter.arm.com

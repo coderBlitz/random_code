@@ -1,0 +1,15 @@
+/* Sum of digits in 100!
+	factorial is custom function in ~/.bcrc, may need to be defined if not present
+*/
+scale = 0 # For modulus
+
+n = factorial(100)
+sum = 0
+while(n > 0){
+	sum += n % 10
+	n /= 10
+}
+
+print "Sum = ", sum, "\n"
+
+halt

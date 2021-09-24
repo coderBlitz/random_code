@@ -1,0 +1,24 @@
+/bin/ls
+ls
+echo "Hello\n World"
+
+/bin/gcc --version
+gcc --version
+
+/bin/echo Hi How are you?
+touch -c
+uname -r
+"uname" -n
+
+echo Testing with \"escape sequences\"
+./test
+
+echo "\0 \n \a \b \r \\ \f \v \' \" \? \* \$ \t \  \! \p"
+echo '\0 \n \a \b \r \\ \f \v \' \" \? \* \$ \t \  \! \p'
+echo \0 \n \a \b \r \\ \f \v \' \" \? \* \$ \t \  \! \p \x00
+
+printf "%s\n" long\ escaped\ argument\ test   "arg2 with \"some quotation marks\""   argument\ 3
+
+  echo Testing non-existent    command..
+blabla
+echo "Herro"

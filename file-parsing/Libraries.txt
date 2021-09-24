@@ -1,0 +1,3 @@
+nm -C /lib/libc.so.6|grep -e " [Tt] "|grep -v _
+
+Command lists all functions in a library file (replace /lib/libc.so.6)

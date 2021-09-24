@@ -1,0 +1,3 @@
+Flag format: DawgCTF{<degN>_<minN>_<degW>_<minW>}
+DawgCTF{37_15_115_48}
+DawgCTF{33_24_104_30}

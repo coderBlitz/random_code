@@ -1,0 +1,18 @@
+<svg version="1.1" height="160" width="380">
+	<defs>
+		<linearGradient id="temp-bar" x1="0%" y1="0%" x2="0%" y2="100%">
+			<stop offset="0%" stop-color="red"/>
+			<stop offset="100%" stop-color="blue"/>
+		</linearGradient>
+	</defs>
+
+	<rect x="0" y="0" height="160" width="380" fill="white"/>
+	<line x1="40" y1="20" x2="40.0001" y2="120" stroke="url(#temp-bar)" stroke-width="2"/>
+	<line x1="40" y1="120" x2="340" y2="120" stroke="black" stroke-width="2"/>
+	<text x="15" y="28" font-size="12">100</text>
+	<text x="28" y="125" font-size="12">0</text>
+	<text x="20" y="110" font-size="12" transform="rotate(-90 20,110)">Temperature</text>
+
+	<circle cx="43" cy="54" r="1" fill="black"/>
+
+</svg>

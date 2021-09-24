@@ -1,0 +1,29 @@
+Blocks are 512 bytes
+MEMEFS has 16-bit FAT entries
+==> 256 FAT entries per block
+==> 65536 FAT entries possible (0 and end are reserved for superblocks)
+==> Max image size ~33MB (=33554432 bytes)
+
+MEMEFS dir entries are 32 bytes each
+==> 16 entries per block
+
+Provided image size 256 blocks = (256*512 bytes)
+* 1 FAT block
+* 1 backup FAT
+* 2 super blocks
+* 18 reserved
+* 234 blocks for dirs and users
+==> d + u = 252
+==> 16d - u = 0
+==> ceil(d) = 14
+==> u = 220
+
+Max image requirements (to allow 1 user block per file):
+* 256 FAT blocks (256*256 = 65536 entries)
+* 256 backup FAT blocks
+* 2 blocks for supers
+* 65022 blocks for dirs and users
+==> d + u = 65022
+==> 16d - u >= 0
+==> ceil(d) = 3825
+==> u = 61197
