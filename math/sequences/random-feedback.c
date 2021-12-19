@@ -14,6 +14,15 @@ uint32_t myRand(uint32_t seed){
 	return rand();
 }
 
+uint32_t test_lcg(uint32_t seed){
+	return (103 * seed) % 131;
+}
+
+uint32_t mimic_lcg(uint32_t seed){
+	return (103 * seed) + 1804289383 % RAND_MAX;
+}
+
+
 int main(int argc, char *argv[]){
 	uint64_t N = (uint64_t)RAND_MAX+1;
 	uint32_t base_seed = 0;
@@ -25,15 +34,16 @@ int main(int argc, char *argv[]){
 		if(temp > 0) base_seed = temp;
 	}
 	//printf("N: %lu\n", N);
-	uint32_t (*fn)(uint32_t) = myRand;
+	//uint32_t (*fn)(uint32_t) = myRand;
+	uint32_t (*fn)(uint32_t) = test_lcg;
 
 	uint32_t last_seed = base_seed + num_seeds;
-	printf("seed, cycle length, start, iteration/index\n");
+	printf("seed, cycle length, start\n");
 	for(int j = base_seed;j <= last_seed;j++){
 		/*srand(j);
 		seed = rand();*/
 		seed = j;
-		printf("%d,", seed);
+		//printf("%d,", seed);
 		uint8_t *num = calloc((uint64_t)RAND_MAX+1, sizeof(*num));
 		if(num == NULL){
 			fprintf(stderr, "Could not alloc array.\n");
