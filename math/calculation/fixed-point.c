@@ -19,6 +19,10 @@ double rt2(double x){
 	return x * (1 - x/4) + 0.5;
 }
 
+double pow_thing(double x){
+	return 1.0 + pow(2,x) - pow(1.5,x);
+}
+
 // Allow comparing functions more easily
 double fpi(double x_init, double (*fn)(double), double tol, uint32_t max_iter){
 	uint32_t count = 0;
@@ -62,4 +66,7 @@ int main(int argc, char *argv[]){
 
 	printf("\nRoot 2:\n");
 	fpi(1.2, rt2, tol, max_iter);
+
+	printf("\nPower thing\n");
+	fpi(-10.0, pow_thing, tol, max_iter);
 }
