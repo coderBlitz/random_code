@@ -2,8 +2,8 @@
 
 uniform vec2 WindowSize;
 
-in vec3 fragColor;
-out vec3 color;
+in vec4 fragColor;
+out vec4 color;
 
 void main(){
 	//color = vec3(1, gl_FragCoord.x/WindowSize.x, 0);

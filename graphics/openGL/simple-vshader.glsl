@@ -15,4 +15,5 @@ void main(){
 	fragColor = vec4(vertex_color, 0.0);
 	//fragColor = vec4(gl_InstanceID % 2, gl_VertexID % 2, 0, 1);
 	//fragColor = vec4(0.5, gl_VertexID % 2, 0, 1);
+	//fragColor = vec4(1,0,1, 0.0);
 }

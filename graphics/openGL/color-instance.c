@@ -15,12 +15,12 @@ const uint16_t height = width;
 const char *title = "Instance experiment";
 
 const GLfloat square_vertex_data[] = {
-	-1.0, -1.0,
-	-1.0, 1.0,
-	1.0, 1.0,
-	1.0, 1.0,
-	1.0, -1.0,
-	-1.0, -1.0
+	-1.0, -1.0, 0.0,
+	-1.0, 1.0, 0.0,
+	1.0, 1.0, 0.0,
+	1.0, 1.0, 0.0,
+	1.0, -1.0, 0.0,
+	-1.0, -1.0, 0.0
 };
 
 GLfloat scale[] = {
@@ -101,7 +101,7 @@ int main(){
 	scale[5] = row_size;
 
 	GLfloat *offset;
-	size_t offset_size = total * 2 * sizeof(*offset);
+	size_t offset_size = total * 3 * sizeof(*offset);
 	offset = malloc(offset_size);
 	if(offset == NULL){
 		fprintf(stderr, "Can't alloc offsets.\n");
@@ -109,7 +109,7 @@ int main(){
 	}
 
 	GLfloat *color;
-	size_t color_size = total * 6 * 3 * sizeof(*color); // Num vertices * 3 colors each
+	size_t color_size = 6 * 3 * sizeof(*color); // Num vertices * 3 colors each
 	color = malloc(color_size);
 	if(color == NULL){
 		fprintf(stderr, "Can't alloc colors.\n");
@@ -144,10 +144,11 @@ int main(){
 	for(int i = 0;i < row_count;i += 1){
 		for(int j = 0;j < col_count;j += 1){
 			long base_idx = col_count * i + j;
-			long off_idx = 2 * base_idx; // 2-dimensional coordinates
+			long off_idx = 3 * base_idx; // 3-dimensional coordinates
 
 			offset[off_idx] = (((4.0 * j + 1.0) * col_size) - 1.0) / col_size; // Offset from left edge
 			offset[off_idx + 1] = (((4.0 * i + 1.0) * row_size) - 1.0) / row_size; // Offset from bottom edge
+			offset[off_idx + 2] = 0.0;
 		}
 	}
 
@@ -172,15 +173,15 @@ int main(){
 	glGenBuffers(1, &square_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, square_vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(square_vertex_data), square_vertex_data, GL_STATIC_DRAW); // Instanced vertices
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribDivisor(0, 0);
 
 	GLuint square_offset_buffer;
 	glGenBuffers(1, &square_offset_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, square_offset_buffer);
 	glBufferData(GL_ARRAY_BUFFER, offset_size, offset, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribDivisor(1, 1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribDivisor(1, 1); // Divisor of 1 increments s_o_b by 3 (size) every 1 instance. Divisor 2 every 2, etc.
 
 	GLuint color_buffer;
 	glGenBuffers(1, &color_buffer);

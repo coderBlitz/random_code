@@ -51,7 +51,7 @@ int main(){
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -119,15 +119,19 @@ int main(){
 	glGenBuffers(1, &square_vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, square_vertex_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(square_vertex_data), square_vertex_data, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribDivisor(0, 0);
+	glVertexAttribFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(0, 0);
+	glBindVertexBuffer(0, square_vertex_buffer, 0, 2 * sizeof(GLfloat));
+	glVertexBindingDivisor(0, 0);
 
 	GLuint square_offset_buffer;
 	glGenBuffers(1, &square_offset_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, square_offset_buffer);
 	glBufferData(GL_ARRAY_BUFFER, offset_size, offset, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribDivisor(1, 1);
+	glVertexAttribFormat(1, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(1, 1);
+	glBindVertexBuffer(1, square_offset_buffer, 0, 2 * sizeof(GLfloat));
+	glVertexBindingDivisor(1, 1);
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -179,14 +183,9 @@ int main(){
 
 		/*	Draw calls
 		*/
-		//glEnableVertexAttribArray(0);
-		//glEnableVertexAttribArray(1);
 
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 2*3, total); // Draw 'total' squares, with 6 vertices each, starting index 0
 		//glDrawArrays(GL_TRIANGLES, 0, 2*3);
-
-		//glDisableVertexAttribArray(1);
-		//glDisableVertexAttribArray(0);
 
 		/* per-loop stuff
 		*/

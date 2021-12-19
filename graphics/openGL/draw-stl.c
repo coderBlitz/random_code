@@ -46,7 +46,7 @@ float *flatten_stl_triangles(struct triangle *tris, const unsigned int count){
 	if(ret == NULL) return NULL;
 
 	for(unsigned int i = 0;i < count;i++){
-		ret[9*i] = tris[i].verts[0].x;
+		ret[9*i + 0] = tris[i].verts[0].x;
 		ret[9*i + 1] = tris[i].verts[0].y;
 		ret[9*i + 2] = tris[i].verts[0].z;
 
@@ -78,7 +78,7 @@ int main(){
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -159,18 +159,21 @@ int main(){
 	glGenBuffers(1, &triangle_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, triangle_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizes[0], triangles[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	//glVertexAttribDivisor(0, 1);// Works if (0,0)
+	glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(0, 10);
+	glBindVertexBuffer(10, triangle_buffer, 0, 3 * sizeof(GLfloat));
 
 	GLuint color_buffer;
 	glGenBuffers(1, &color_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
 	glBufferData(GL_ARRAY_BUFFER, colors_size, colors, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	//glVertexAttribDivisor(1, 1);
+	glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(1, 11);
+	glBindVertexBuffer(11, color_buffer, 0, 3 * sizeof(GLfloat));
 
 	/*GLuint base_buffer;
 	glGenBuffers(1, &base_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, base_buffer);
 	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(*base), base, GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribDivisor(2, 0);*/
@@ -244,8 +247,8 @@ int main(){
 		}
 
 		// Control framerate
-		/*frame++;
-		if(current.tv_sec - previous_frame.tv_sec >= 1){
+		frame++;
+		/*if(current.tv_sec - previous_frame.tv_sec >= 1){
 			fps = frame;
 			frame = 0;
 			previous_frame = current;
