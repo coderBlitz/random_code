@@ -12,9 +12,7 @@
 #include<sys/socket.h>
 
 /**
-TODO: Use epoll() and non-blocking sockets for network connections
 TODO: Implement a state-tracking system for each connection (what action to perform next)
-TODO: Use buffers to track partial client responses??
 **/
 
 short SERVER_PORT = 2173;
