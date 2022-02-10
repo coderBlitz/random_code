@@ -2,6 +2,7 @@
 Vector
 
 Provides basic vector-vector and vector-scalar operations
+
 --]]
 
 Vector = {}
@@ -22,7 +23,7 @@ function Vector:new(nv, z)
 		data = {}
 	}
 	if (type(nv) == "number") then
-		-- Fill vector with zeros (TODO: Allow initial value to be given)
+		-- Fill vector with zeros
 		for i = 1,nv do
 			v.data[i] = z
 		end
@@ -217,4 +218,13 @@ function Vector:min()
 	end
 
 	return m, k
+end
+
+local orig_type = type
+type = function(obj)
+	local obj_type = orig_type(obj)
+	if obj_type == "table" and getmetatable(obj) == Vector then
+		return "vector"
+	end
+	return obj_type
 end
