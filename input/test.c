@@ -10,7 +10,7 @@ int main(){
 struct libevdev *dev = NULL;
 	int fd;
 	int rc = 1;
-	fd = open("/dev/input/event3", O_RDONLY|O_NONBLOCK);// 0 is keyboard, 1/2 is mouse, 10 is trackpad
+	fd = open("/dev/input/js1", O_RDONLY|O_NONBLOCK);// 0 is keyboard, 1/2 is mouse, 10 is trackpad
 	rc = libevdev_new_from_fd(fd, &dev);
 	if (rc < 0) {
         fprintf(stderr, "Failed to init libevdev (%s)\n", strerror(-rc));

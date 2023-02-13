@@ -58,10 +58,12 @@ fn create_uf2(offset: u32, data: &[u8]) -> Vec<u8> {
 	const MAGIC3: [u8; 4] = [0x30, 0x6F, 0xB1, 0x0A];
 	const FLAGS: [u8; 4] = [0x00, 0x20, 0x00, 0x00]; // familyID present flag
 	const FAMILYID: [u8; 4] = [0x56, 0xFF, 0x8B, 0xE4]; // Pi pico family
-	const PADDING: [u8; 220] = [0; 220];
+	const PADDING: [u8; 476] = [0; 476];
 
-	let num_blocks = (data.len() as u32) / PAYLOAD_SIZE;
+	// Number of blocks (ceiling of data length over payload)
+	let num_blocks = (PAYLOAD_SIZE - 1 + data.len() as u32) / PAYLOAD_SIZE;
 	let nblocks: [u8; 4] = num_blocks.to_le_bytes();
+	println!("Creating {num_blocks} blocks..");
 
 	// Scratch vector per loop
 	let block = &mut Vec::new();
@@ -88,10 +90,13 @@ fn create_uf2(offset: u32, data: &[u8]) -> Vec<u8> {
 		assert_eq!(block.len(), 32);
 
 		// Add data
-		block.extend_from_slice(&data[(256*i as usize) .. (256*(i+1) as usize)]);
+		let start = 256 * i as usize;
+		let end = data.len().min(start + 256);
+		let chunk_len = end - start;
+		block.extend_from_slice(&data[start .. end]);
 
 		// Pad and add final magic
-		block.extend_from_slice(&PADDING);
+		block.extend_from_slice(&PADDING[..(476 - chunk_len)]);
 		block.extend_from_slice(&MAGIC3);
 
 		// End of loop stuff
@@ -105,7 +110,8 @@ fn create_uf2(offset: u32, data: &[u8]) -> Vec<u8> {
 }
 
 fn main() {
-	let mut data: [u8; 256] = [0;256];
+	//let mut data: [u8; 256] = [0;256];
+	let data = &mut Vec::new();
 
 	// Get input file
 	let argv = env::args().collect::<Vec<String>>();
@@ -117,18 +123,30 @@ fn main() {
 	// Open file and read data
 	let fname = &argv[1];
 	let f = &mut fs::File::open(fname).expect("Could not open data file");
-	let _ = f.read(&mut data[..252]);
 
 	// 2 bytes data (Infinite loop)
 	//data[0] = 0xFE;
 	//data[1] = 0xE7;
 
-	// Checksum
+	// Read in whole file
+	if let Ok(n) = f.read_to_end(data) {
+		// Make Vec at least 256 large
+		if n < 256 {
+			data.resize(256, 0);
+		}
+		println!("Read in {n} bytes.");
+	} else {
+		eprintln!("Error reading entire file.");
+
+		return;
+	}
+
+	// Checksum for boot stage
 	let check = crc32(0xFFFF_FFFF, &data[..252]);
 	println!("Check is 0x{check:08X}");
 
 	// Checksum (data + all zeros)
-	data[252..].copy_from_slice(&check.to_le_bytes());
+	data[252..256].copy_from_slice(&check.to_le_bytes());
 	let offset = 0x1000_0000;
 
 	// Make UF2

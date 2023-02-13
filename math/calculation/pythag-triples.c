@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
 		x1 = 2*c - 1;
 		a = sqrt(x1);
 
-		x2 = c*c - a*a; // Optimize by subtracting (2*a + 1) each time
+		x2 = c*c - a*a;
 		b = sqrt(x2);
 		//printf("\ta = %u\tb = %u\n", a, b);
 		for(;a <= b;a++){
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
 				printf("(%u, %u, %u)\n", a, b, c);
 			}
 
-			x2 -= 2*a + 1;
+			x2 -= 2*a + 1; // Optimized by subtracting (2*a + 1) each time, instead of recomputing
 			b = sqrt(x2);
 			//printf("\ta = %u\tb = %u\n", a, b);
 		}

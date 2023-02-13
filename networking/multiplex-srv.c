@@ -36,7 +36,7 @@ struct conn_state {
 /** Functions
 **/
 // Return difference between two timespecs
-double timespecdiff(struct timespec *a, struct timespec *b){
+double timespecdiff(struct timespec *restrict a, struct timespec *restrict b){
 	return (a->tv_sec - b->tv_sec) + (a->tv_nsec - b->tv_nsec) / 1000000000.0;
 }
 

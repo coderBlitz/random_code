@@ -18,6 +18,8 @@ Like so:
 Algo:
 --------------------
 Let n processes have IDs [1,n].
+Each process will perform this procedure once the message is received (or is
+ process 1)
 Repeat while next ID is valid/in range:
 	Send to left child (ID 2n)
 

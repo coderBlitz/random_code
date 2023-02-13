@@ -1,24 +1,22 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-int main(){
-	unsigned long long high = 10000000;
-	int *lens = malloc(high*sizeof(int));
-	unsigned long long max=0;
-
-	for(unsigned long long i=0;i<high;i++){
-		int count=0;
-		unsigned long long num=i;
-		while(num > 1){
-			if(num%2 == 0) num /= 2;
-			else num = num*3 + 1;
-			count++;
-		}
-		lens[i] = count;
-		if(lens[i] > lens[max]) max = i;
+int main(int argc, char *argv[]){
+	unsigned long N = 1;
+	if(argc == 2){
+		N = strtoul(argv[1], NULL, 10);
+	}else{
+		printf("Usage: collatz NUM");
+		return 1;
 	}
-	printf("Largest chain: %d (%llu)\n",lens[max],max);
 
+	printf("%lu\n", N);
+	while(N > 1){
+		if(N % 2 == 0) N /= 2;
+		else N = N*3 + 1;
 
-	free(lens);
+		printf("%lu\n", N);
+	}
+
+	return 0;
 }

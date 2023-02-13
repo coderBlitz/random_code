@@ -141,6 +141,7 @@ int main(){
 	//num_triangles[0] = 2;
 	//sizes[0] = 9 * num_triangles[0] * sizeof(**triangles);
 
+	// Fill the color buffer
 	float *colors;
 	size_t colors_size = 9 * num_triangles[0] * sizeof(*colors);
 	colors = malloc(colors_size);
@@ -155,6 +156,16 @@ int main(){
 	}
 
 	// Initialize GL buffers
+	/*/ Ideally can use instanced rendering to save memory by reusing same color for
+	 every triangle. However, triangles need 3 vertices to draw, but instancing will
+	 only use 1 vertex at a time, incrementing according to the divisor (but still
+	 only 1 vertex at a time!!!), hence nothing gets drawn.
+	In other words, a non-zero divisor makes each instance only use one `size` (set
+	 by vertexAttribFormat) worth of attribute data.
+	Hence, instancing will not be possible. If desired, using a uniform would suffice.
+
+	See color-instance.c for further notes
+	//*/
 	GLuint triangle_buffer;
 	glGenBuffers(1, &triangle_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, triangle_buffer);
@@ -235,7 +246,6 @@ int main(){
 
 		/*	Draw calls
 		*/
-		//glDrawArraysInstanced(GL_TRIANGLES, 0, 3, num_triangles[0]); // Draw 'total'
 		glDrawArrays(GL_TRIANGLES, 0, num_triangles[0]*3);
 
 

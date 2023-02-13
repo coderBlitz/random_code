@@ -1,0 +1,14 @@
+// Return difference between two timespecs as decimal
+double timespecdiff(struct timespec *a, struct timespec *b){
+	return (a->tv_sec - b->tv_sec) + (a->tv_nsec - b->tv_nsec) / 1000000000.0;
+}
+
+// Return timespec difference in another time spec struct
+void timespecsub(struct timespec *res, const struct timespec *a, const struct timespec *b){
+	res->tv_sec = a->tv_sec - b->tv_sec;
+	res->tv_nsec = a->tv_nsec - b->tv_nsec;
+	if(res->tv_nsec < 0){
+		res->tv_nsec += 1000000000;
+		res->tv_sec -= 1;
+	}
+}

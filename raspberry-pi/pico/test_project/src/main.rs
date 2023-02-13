@@ -11,6 +11,37 @@ use core::arch::asm;
 use core::panic::PanicInfo;
 
 const RESETS_BASE: u32 = 0x4000_C000;
+
+/// Resets register
+///
+/// All bits default to 0x1 for the reset state. All registers are RW.
+///
+/// * 31:25 - Reserved
+/// * 24 - USBCTRL
+/// * 23 - UART1
+/// * 22 - UART0
+/// * 21 - TIMER
+/// * 20 - TBMAN
+/// * 19 - SYSINFO
+/// * 18 - SYSCFG
+/// * 17 - SPI1
+/// * 16 - SPI0
+/// * 15 - RTC
+/// * 14 - PWM
+/// * 13 - PLL_USB
+/// * 12 - PLL_SYS
+/// * 11 - PIO1
+/// * 10 - PIO0
+/// *  9 - PADS_QSPI
+/// *  8 - PADS_BANK0
+/// *  7 - JTAG
+/// *  6 - IO_SQPI
+/// *  5 - IO_BANK0
+/// *  4 - I2C1
+/// *  3 - I2C0
+/// *  2 - DMA
+/// *  1 - BUSCTRL
+/// *  0 - ADC
 const RESETS_RESET: u32 = RESETS_BASE + 0x0;
 const RESETS_WDSEL: u32 = RESETS_BASE + 0x4;
 const RESETS_RESET_DONE: u32 = RESETS_BASE + 0x8;
@@ -39,7 +70,11 @@ const GPIO_FUNC_NULL: u32 = 0x1F;
 ///
 /// Will call all other functions and do all processing. Not named _start or
 ///  _main to avoid accidental success when linking/compiling.
-/// TODO: Try to interact with GPIO LED
+///
+/// TODO: (here or in new project) Configure flash for XIP
+///
+/// * Write SSI control register (INST_L = 0, ADDR_L = 32 bits, XIP_CMD = 0xa0, SPI_FRF != 0, data frame size, addr len, wait cycles, transaction type)
+/// * Enable/power XIP cache (may need to do this before control register)
 #[no_mangle]
 pub extern "C" fn _strat() -> ! {
 	/* Attempt to turn on LED.
@@ -92,7 +127,7 @@ pub extern "C" fn _strat() -> ! {
 #[inline(always)]
 fn nop() {
 	unsafe {
-		asm!("NOP", options(nomem, nostack, raw));
+		asm!("NOP", options(nomem, nostack));
 	}
 }
 

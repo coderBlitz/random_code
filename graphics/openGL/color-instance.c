@@ -123,17 +123,17 @@ int main(){
 	color[4] = 0.6;
 	color[5] = 0.6;
 
-	color[6] = 0.3;
-	color[7] = 1.0;
-	color[8] = 0.5;
+	color[6] = 1.0;
+	color[7] = 0.5;
+	color[8] = 0.3;
 
 	color[9] = 0.6;
 	color[10] = 0.6;
 	color[11] = 0.6;
 
-	color[12] = 0.3;
-	color[13] = 1.0;
-	color[14] = 0.5;
+	color[12] = 0.5;
+	color[13] = 0.3;
+	color[14] = 1.0;
 
 	color[15] = 0.6;
 	color[16] = 0.6;
@@ -168,6 +168,11 @@ int main(){
 	}*/
 
 	/* Initialize GL buffers
+	Notes/observations:
+		When divisor for color_buffer is 0, the color attribute increments (for stride)
+		 for every vertex. So this is a per-vertex setting.
+		When divisor for color_buffer is 1, the color attribute is incremented (for stride)
+		 for every 1 instance (every `count` primitive draws, from drawArraysInstanced call).
 	*/
 	GLuint square_vertex_buffer;
 	glGenBuffers(1, &square_vertex_buffer);

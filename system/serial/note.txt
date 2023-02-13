@@ -1,0 +1,3 @@
+setbuf may be necessary if redirecting output from terabee
+
+setbuf -o0 ./terabee > file

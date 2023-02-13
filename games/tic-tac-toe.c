@@ -3,7 +3,7 @@
 #include<unistd.h>
 #include<time.h>
 
-static int board[3][3];
+static char board[4][4];
 static char turn = 1;
 
 void printBoard(){
@@ -35,9 +35,16 @@ void computer(){// Computer is always 2
 	}
 }
 
+int check_game(void){
+	printf("%08x\n", *(int *)board);
+	printf("%08x\n", *(int *)(board + 1));
+	printf("%08x\n", *(int *)(board + 2));
+}
+
 int main(){
 	srand(time(0));
-//	for(int i=0;i<9;i++) board[i/3][i%3] = rand() % 3;// Random garbage values to test print
+	for(int i=0;i<9;i++) board[i/3][i%3] = rand() % 3;// Random garbage values to test print
 
 	printBoard();
+	check_game();
 }

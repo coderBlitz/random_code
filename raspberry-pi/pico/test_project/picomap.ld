@@ -34,6 +34,9 @@ MEMORY {
 
 	/* USB DPRAM memory if the USB port is not used */
 	USB_DPRAM (rwx) : ORIGIN = 0x50100000, LENGTH = 4K
+
+	/* Second-stage bootloader region */
+	BOOT2: ORIGIN = 0x10000000, LENGTH = 0x100
 }
 
 ENTRY(_strat)
@@ -42,6 +45,6 @@ ENTRY(_strat)
 SECTIONS {
 	.text ALIGN(256) : {
 		*(.text*)
+		./boot2_w25q080.bin
 	} > XIP_FLASH
-	/*.data ALIGN(256) : {*/
 }

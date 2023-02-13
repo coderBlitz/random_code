@@ -34,7 +34,7 @@ PAD Y-7
 int main(){
 	printf("LEL\n");
 
-	int fd = open("/dev/input/js0",O_RDONLY);
+	int fd = open("/dev/input/js1",O_RDONLY);
 	if(fd == -1){
 		fprintf(stderr,"No controller to open\n");
 		exit(1);

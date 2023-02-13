@@ -1,5 +1,5 @@
 print("Enter a number:")
-a = io.read("*number") -- read a number
+a = io.read("*n") -- read a number
 print("You have entered", a)
 print("a^2", a^2)
 

@@ -1,4 +1,4 @@
--- Multiplying 2 digits, then summing digits yields the following pattern.
+-- Multiplying by 2, then summing resulting digits yields the following pattern.
 -- Avoids lots of string processing and extra math
 lookup = {
 	["0"] = 0,
@@ -6,19 +6,19 @@ lookup = {
 	["2"] = 4,
 	["3"] = 6,
 	["4"] = 8,
-	["5"] = 1,
-	["6"] = 3,
-	["7"] = 5,
+	["5"] = 1, -- 10 --> 1 + 0 = 1
+	["6"] = 3, -- 12 --> 1 + 2 = 3
+	["7"] = 5, -- ...
 	["8"] = 7,
 	["9"] = 9
 }
 
+-- Perform Luhn's algorithm (TODO: Modify to work with variable digits)
 function verify(num)
 	local sum = 0
 	local fn = num:gmatch("(%d)")
 	local l = fn()
 
-	-- 
 	while l ~= nil do
 		sum = sum + lookup[l]
 

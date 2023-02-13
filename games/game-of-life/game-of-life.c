@@ -170,19 +170,19 @@ void zoom(GLFWwindow *window, double xoffset, double yoffset){
 	if((int)yoffset < 0){ // Zoom out (scale gets smaller)
 		//LEVEL  = fmax(LEVEL - 1, LEVELS);
 		//zoom_change = -1;
-		scale[0] *= zoom_rate_inv;
-		scale[5] *= zoom_rate_inv;
+		projection[0] *= zoom_rate_inv;
+		projection[5] *= zoom_rate_inv;
 
-		scale[12] *= zoom_rate_inv; // Should zoom on center of view
-		scale[13] *= zoom_rate_inv;
+		//projection[12] *= zoom_rate_inv; // Should zoom on center of view
+		//projection[13] *= zoom_rate_inv;
 	}else{ // Zoom in (scale gets larger)
 		//LEVEL += 1;
 		//zoom_change = 1; // Toggle flag for display to center zoom, positive for in, negative for out
-		scale[0] *= zoom_rate;
-		scale[5] *= zoom_rate;
+		projection[0] *= zoom_rate;
+		projection[5] *= zoom_rate;
 
-		scale[12] *= zoom_rate; // Should zoom on center of view
-		scale[13] *= zoom_rate;
+		//projection[12] *= zoom_rate; // Should zoom on center of view
+		//projection[13] *= zoom_rate;
 	}
 	//printf("zoom: (%lf, %lf)\t%u/%u\n", xoffset, yoffset, LEVEL, LEVELS);
 }
@@ -200,8 +200,10 @@ void mousePos(GLFWwindow *window, double xpos, double ypos){
 	float col_size = 1.0 / (WIDTH); // Square width
 
 	if(left_down){
-		scale[12] += xdiff * 2 * col_size; // 12 and 13 because of transpose for GL
-		scale[13] -= ydiff * 2 * row_size; // Shift only depends on original pixel size
+		//projection[12] += xdiff * 2 * col_size; // 12 and 13 because of transpose for GL
+		//projection[13] -= ydiff * 2 * row_size; // Shift only depends on original pixel size
+		projection[3] += xdiff * 2.0 * col_size;
+		projection[7] -= ydiff * 2.0 * row_size;
 	}
 }
 
@@ -212,13 +214,11 @@ void mouseButton(GLFWwindow *window, int button, int action, int mods){
 	}else if(button == GLFW_MOUSE_BUTTON_RIGHT){
 		LEVEL = LEVELS; // Reset zoom
 
-		float row_size = 1.0 / (HEIGHT); // Square height
-		float col_size = 1.0 / (WIDTH); // Square width
-		scale[0] = col_size; // Reset zoom
-		scale[5] = row_size;
+		projection[0] = 1.0; // Reset zoom
+		projection[5] = 1.0;
 
-		scale[12] = 0.0; // Reset pan
-		scale[13] = 0.0;
+		projection[3] = 0.0; // Reset pan
+		projection[7] = 0.0;
 	}
 }
 
@@ -338,25 +338,40 @@ int main(int argc, char *argv[]){
 	*/
 	printf("Init'ing openCL stuff..\n");
 	// Get platform and device information
-	cl_platform_id platform_id = NULL;
-	cl_device_id device_id = NULL;   
+	const int max_platforms = 8;
+	cl_platform_id platform_ids[max_platforms], active_platform = NULL;
+	cl_device_id device_id = NULL;
 	cl_uint ret_num_devices;
 	cl_uint ret_num_platforms;
-	cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-	ret = clGetDeviceIDs( platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+	cl_int ret = clGetPlatformIDs(max_platforms, platform_ids, &ret_num_platforms);
 
-	// Check for support
-	char exts[1024];
-	ret = clGetPlatformInfo(platform_id, CL_PLATFORM_EXTENSIONS, sizeof(exts), exts, NULL);
-	if(!strstr(exts, "cl_khr_gl_sharing")){
-		printf("Platform doesn't support CL GL sharing\n");
+	// Loop over platforms to grab first device that supports (if any)
+	for(cl_uint id = 0;id < ret_num_platforms;id++){
+		// Check for support
+		char exts[1024];
+		ret = clGetPlatformInfo(platform_ids[id], CL_PLATFORM_EXTENSIONS, sizeof(exts), exts, NULL);
+		if(!strstr(exts, "cl_khr_gl_sharing")){
+			printf("Platform %u (ID 0x%X) doesn't support CL GL sharing\n", id, platform_ids[id]);
+		}else{
+			active_platform = platform_ids[id];
+			printf("Platform %u (ID 0x%X) supports CL GL sharing. Using..\n", id, platform_ids[id]);
+			break;
+		}
+	}
+
+	// Exit if no device supports
+	if(active_platform == NULL){
+		fprintf(stderr, "No platform supports CL-GL sharing. Exiting..\n");
 		glfwTerminate();
 		return -3;
 	}
 
+	// Fetch first device to use
+	ret = clGetDeviceIDs(active_platform, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+
 	// Get properties, create context and queue
 	cl_context_properties props[] = {
-		CL_CONTEXT_PLATFORM, (cl_context_properties) platform_id,
+		CL_CONTEXT_PLATFORM, (cl_context_properties) active_platform,
 		CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
 		CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
 		0
@@ -544,6 +559,7 @@ int main(int argc, char *argv[]){
 	GLuint uniform_projection = glGetUniformLocation(programID, "projection");
 
 	glUniform2f(uniform_WindowSize, WIDTH, HEIGHT);
+	glUniformMatrix4fv(uniform_model, 1, GL_TRUE, scale);
 	glUniformMatrix4fv(uniform_view, 1, GL_TRUE, rotation);
 	glUniformMatrix4fv(uniform_projection, 1, GL_TRUE, projection);
 
@@ -702,7 +718,8 @@ int main(int argc, char *argv[]){
 
 		glfwGetCursorPos(window, &xpos, &ypos);
 		mousePos(window, xpos, ypos);
-		glUniformMatrix4fv(uniform_model, 1, GL_FALSE, scale); // For updated scale
+		//glUniformMatrix4fv(uniform_model, 1, GL_FALSE, scale); // For updated scale
+		glUniformMatrix4fv(uniform_projection, 1, GL_TRUE, projection);
 		//printf("(%lf, %lf)\n", xpos, ypos);
 
 		// Track framerate
@@ -710,7 +727,7 @@ int main(int argc, char *argv[]){
 			fps = frame;
 			frame = 0;
 			previous = current;
-			printf("FPS: %3u\tDraw: %8d\tNext gen: %10d\n", fps, draw_end.tv_nsec - draw_beg.tv_nsec, up_end.tv_nsec - up_beg.tv_nsec);
+			printf("FPS: %3u\tDraw: %8dns\tNext gen: %10dns\n", fps, draw_end.tv_nsec - draw_beg.tv_nsec, up_end.tv_nsec - up_beg.tv_nsec);
 		}
 
 		/* Control render framerate
