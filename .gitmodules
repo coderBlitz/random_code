@@ -1,0 +1,3 @@
+[submodule "spicy_code"]
+	path = spicy_code
+	url = git@github.com:coderBlitz/spicy_code
