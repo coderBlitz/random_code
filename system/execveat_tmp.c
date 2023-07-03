@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/sendfile.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 int main() {
@@ -23,26 +24,44 @@ int main() {
 		return 2;
 	}
 
+	// Proc path
+	char proc_path[64];
+	snprintf(proc_path, 64, "/proc/self/fd/%d", tmp_fd);
+
 	// Copy file
 	char buffer[8192];
 	int res;
 	off_t offset = 0;
 	while ((res = sendfile(tmp_fd, exec_fd, &offset, 8192)) > 0) {}
 
+	// Just in case perms
+	res = fchmod(tmp_fd, S_IRWXU);
+	if (res < 0) {
+		fprintf(stderr, "fchmod failed");
+	}
+	res = chmod(proc_path, S_IRWXU);
+	if (res < 0) {
+		fprintf(stderr, "chmod failed");
+	}
+
+	// Sleep for noting PID
 	printf("My pid: %d\n", getpid());
 	sleep(5);
 
 	char *args[] = {"Bla", "10", NULL};
 	char *env[] = {NULL};
-	res = execveat(exec_fd, "", args, env, AT_EMPTY_PATH);
 
+	// Exec the tmp fd directly
+	res = execveat(tmp_fd, "", args, env, AT_EMPTY_PATH);
 	fprintf(stderr, "Execveat FD failed: %s\n", strerror(errno));
 
-	char path[64];
-	snprintf(path, 64, "/proc/self/fd/%d", tmp_fd);
-	res = execveat(-1, path, args, env, 0);
-
+	// Exec the proc path directly
+	res = execveat(-1, proc_path, args, env, 0);
 	fprintf(stderr, "Execveat proc failed: %s\n", strerror(errno));
+
+	// Try execve normally just in case
+	res = execve(proc_path, args, env);
+	printf("Execve failed\n");
 
 	close(exec_fd);
 	close(tmp_fd);
