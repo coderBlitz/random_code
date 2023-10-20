@@ -5,15 +5,21 @@
 //#include <linux/fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 int main() {
 	// Create temp file.
-	int tmp_fd = open("/tmp", O_WRONLY | O_TMPFILE | O_EXCL, S_IRWXU);
+	/*int tmp_fd = open("/tmp", O_WRONLY | O_TMPFILE | O_EXCL, S_IRWXU);
 	if (tmp_fd == -1) {
 		fprintf(stderr, "Opening tmpfile failed: %s\n", strerror(errno));
+		return 1;
+	}*/
+	int tmp_fd = memfd_create("tmpmem", 0);
+	if (tmp_fd == -1) {
+		fprintf(stderr, "Opening memfd failed: %s\n", strerror(errno));
 		return 1;
 	}
 
@@ -52,14 +58,17 @@ int main() {
 	char *env[] = {NULL};
 
 	// Exec the tmp fd directly
+	printf("Trying execveat on fd directly..\n");
 	res = execveat(tmp_fd, "", args, env, AT_EMPTY_PATH);
 	fprintf(stderr, "Execveat FD failed: %s\n", strerror(errno));
 
 	// Exec the proc path directly
+	printf("Trying /proc/self/fd/ execveat..\n");
 	res = execveat(-1, proc_path, args, env, 0);
 	fprintf(stderr, "Execveat proc failed: %s\n", strerror(errno));
 
 	// Try execve normally just in case
+	printf("Trying /proc/self/fd/ execve..\n");
 	res = execve(proc_path, args, env);
 	printf("Execve failed\n");
 
