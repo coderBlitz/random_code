@@ -1,7 +1,9 @@
+# Specifics
 .directory
 busybox-x86_64
 GPL2-LICENSE
 
+# Directories
 /discord-bot/
 /weather-log/
 /websites/ovpn-admin/
