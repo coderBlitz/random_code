@@ -37,6 +37,7 @@ MEMORY {
 
 	/* Second-stage bootloader region */
 	BOOT2: ORIGIN = 0x10000000, LENGTH = 0x100
+	CODE: ORIGIN = 0x10000100, LENGTH = 0x1FFF00
 }
 
 ENTRY(_strat)
@@ -45,6 +46,6 @@ ENTRY(_strat)
 SECTIONS {
 	.text ALIGN(256) : {
 		*(.text*)
-		./boot2_w25q080.bin
-	} > XIP_FLASH
+	/* } > BOOT2 /* Section when loading stage 2 only */
+	} > CODE /* Section when loading all non-stage 2 code */
 }

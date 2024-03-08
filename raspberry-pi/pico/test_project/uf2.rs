@@ -103,7 +103,7 @@ fn create_uf2(offset: u32, data: &[u8]) -> Vec<u8> {
 		assert_eq!(block.len(), 512);
 		out.extend_from_slice(&block);
 		block.clear();
-		println!("Created block {}", i+1);
+		println!("Created block {} > 0x{block_offset:x}", i+1);
 	}
 
 	out
@@ -147,7 +147,7 @@ fn main() {
 
 	// Checksum (data + all zeros)
 	data[252..256].copy_from_slice(&check.to_le_bytes());
-	let offset = 0x1000_0000;
+	let offset = 0x1000_0100; // Stage 2 goes to 0x1000_0000, rest goes 0x1000_0100
 
 	// Make UF2
 	let out = create_uf2(offset, &data);

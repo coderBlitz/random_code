@@ -10,6 +10,13 @@
 use core::arch::asm;
 use core::panic::PanicInfo;
 
+const XIP_SSI_BASE: u32 = 0x1800_0000;
+const XIP_SSI_CTRLR0: u32 = XIP_SSI_BASE;
+const XIP_SSI_CTRLR1: u32 = XIP_SSI_BASE + 0x04;
+const XIP_SSI_SSIENR: u32 = XIP_SSI_BASE + 0x08;
+const XIP_SSI_BAUDR: u32 = XIP_SSI_BASE + 0x14;
+const XIP_SSI_SPI_CTRLR0: u32 = XIP_SSI_BASE + 0xf4;
+
 const RESETS_BASE: u32 = 0x4000_C000;
 
 /// Resets register
@@ -70,13 +77,70 @@ const GPIO_FUNC_NULL: u32 = 0x1F;
 ///
 /// Will call all other functions and do all processing. Not named _start or
 ///  _main to avoid accidental success when linking/compiling.
-///
-/// TODO: (here or in new project) Configure flash for XIP
-///
-/// * Write SSI control register (INST_L = 0, ADDR_L = 32 bits, XIP_CMD = 0xa0, SPI_FRF != 0, data frame size, addr len, wait cycles, transaction type)
-/// * Enable/power XIP cache (may need to do this before control register)
+//
+// TODO: (here or in new project) Configure flash for XIP
+//
+// * Write SSI control register (INST_L = 0, ADDR_L = 32 bits, XIP_CMD = 0xa0, SPI_FRF != 0, data frame size, addr len, wait cycles, transaction type)
+// * Enable/power XIP cache (may need to do this before control register)
+/*
+  XIP_SSI->SSIENR = 0;
+
+  XIP_SSI->BAUDR = 2; // Must be even
+
+  XIP_SSI->CTRLR0 = (XIP_SSI_CTRLR0_SPI_FRF_STD << XIP_SSI_CTRLR0_SPI_FRF_Pos) |
+      (XIP_SSI_CTRLR0_TMOD_EEPROM_READ << XIP_SSI_CTRLR0_TMOD_Pos) |
+      ((32-1) << XIP_SSI_CTRLR0_DFS_32_Pos);
+
+  XIP_SSI->CTRLR1 = (0 << XIP_SSI_CTRLR1_NDF_Pos);
+
+  XIP_SSI->SPI_CTRLR0 = (0x03/*READ_DATA*/ << XIP_SSI_SPI_CTRLR0_XIP_CMD_Pos) |
+    ((24 / 4) << XIP_SSI_SPI_CTRLR0_ADDR_L_Pos) |
+    (XIP_SSI_SPI_CTRLR0_INST_L_8B << XIP_SSI_SPI_CTRLR0_INST_L_Pos) |
+    (XIP_SSI_SPI_CTRLR0_TRANS_TYPE_1C1A << XIP_SSI_SPI_CTRLR0_TRANS_TYPE_Pos);
+
+  XIP_SSI->SSIENR = XIP_SSI_SSIENR_SSI_EN_Msk;
+*/
 #[no_mangle]
 pub extern "C" fn _strat() -> ! {
+	//enable_xip();
+
+	flash_led()
+	//loop {}
+}
+
+#[inline(always)]
+fn enable_xip() { unsafe {
+	let xip_ssienr = XIP_SSI_SSIENR as *mut u32;
+	let xip_ctrlr0 = XIP_SSI_CTRLR0 as *mut u32;
+	let xip_ctrlr1 = XIP_SSI_CTRLR1 as *mut u32;
+	let xip_spi_ctrlr0 = XIP_SSI_SPI_CTRLR0 as *mut u32;
+	let xip_baudr = XIP_SSI_BAUDR as *mut u32;
+
+	// Disable SSI
+	xip_ssienr.write_volatile(0);
+
+	// Set baud rate (clock divider)
+	xip_baudr.write_volatile(2);
+
+	// Set SPI_RFR -> 0x0, DFS_32 -> 31, TMOD -> 0x3
+	xip_ctrlr0.write_volatile(0x001E_0300);
+
+	// Set NDF -> 0
+	xip_ctrlr1.write_volatile(0);
+
+	// Set XIP_CMD -> 0x03, ADDR_L -> 0x6, TRANS_TYPE -> 0x0
+	xip_spi_ctrlr0.write_volatile(0x0300_0218);
+
+	// Enable SSI
+	xip_ssienr.write_volatile(1);
+
+	// Jump back to memory??
+	// 0x10000100
+	asm!("b =0x10000100");
+}}
+
+#[inline(always)]
+fn flash_led() -> ! {
 	/* Attempt to turn on LED.
 		1. Un-reset APB/GPIO interface
 		2. Set LED pin (GPIO25) to SIO mode
