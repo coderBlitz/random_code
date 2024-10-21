@@ -2,6 +2,7 @@
 .directory
 busybox-x86_64
 GPL2-LICENSE
+IDEAS.txt
 
 # Directories
 /discord-bot/
