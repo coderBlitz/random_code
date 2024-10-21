@@ -41,20 +41,20 @@ int main() {
 	while ((res = sendfile(tmp_fd, exec_fd, &offset, 8192)) > 0) {}
 
 	// Just in case perms
-	res = fchmod(tmp_fd, S_IRWXU);
+	/*res = fchmod(tmp_fd, S_IRWXU);
 	if (res < 0) {
 		fprintf(stderr, "fchmod failed");
 	}
 	res = chmod(proc_path, S_IRWXU);
 	if (res < 0) {
 		fprintf(stderr, "chmod failed");
-	}
+	}*/
 
 	// Sleep for noting PID
 	printf("My pid: %d\n", getpid());
 	sleep(5);
 
-	char *args[] = {"Bla", "10", NULL};
+	char *args[] = {"Random process name", "10", NULL};
 	char *env[] = {NULL};
 
 	// Exec the tmp fd directly
