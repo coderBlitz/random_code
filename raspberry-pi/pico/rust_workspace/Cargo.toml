@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = [
+	"pico_alloc",
+	"stage2",
+	"simple"
+]
+
+[profile.dev]
+strip = "none"
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+strip = "symbols"
+opt-level = "s"
+lto = true

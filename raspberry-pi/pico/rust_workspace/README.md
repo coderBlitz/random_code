@@ -10,6 +10,7 @@ My simultaneous foray into embedded programming and Rust embedded programming.
 
 ## Stage 2 and beyond
 Until better method implemented:
+
 1. Compile binary with exclusively the `enable_xip()` function call.
 2. Create UF2 of binary at offset 0x1000_0000.
 3. Load binary onto pico.

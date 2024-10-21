@@ -6,13 +6,3 @@ edition = "2021"
 description = "Simple pi pico baremetal experiment"
 
 [dependencies]
-
-[profile.dev]
-strip = "none"
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-strip = "symbols"
-#opt-level = "s"
-lto = true

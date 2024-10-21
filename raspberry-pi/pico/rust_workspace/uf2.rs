@@ -94,6 +94,7 @@ fn create_uf2(offset: u32, data: &[u8]) -> Vec<u8> {
 		let end = data.len().min(start + 256);
 		let chunk_len = end - start;
 		block.extend_from_slice(&data[start .. end]);
+		println!("Data peek: {:x?}", &data[start .. (start + 8)]);
 
 		// Pad and add final magic
 		block.extend_from_slice(&PADDING[..(476 - chunk_len)]);
@@ -115,8 +116,8 @@ fn main() {
 
 	// Get input file
 	let argv = env::args().collect::<Vec<String>>();
-	if argv.len() != 2 {
-		eprintln!("Usage: uf2 input_file");
+	if argv.len() < 2 {
+		eprintln!("Usage: uf2 input_file [output_file]");
 		return;
 	}
 
@@ -147,12 +148,14 @@ fn main() {
 
 	// Checksum (data + all zeros)
 	data[252..256].copy_from_slice(&check.to_le_bytes());
-	let offset = 0x1000_0100; // Stage 2 goes to 0x1000_0000, rest goes 0x1000_0100
+	let offset = 0x1000_0000; // Stage 2 goes to 0x1000_0000, rest goes 0x1000_0100
 
 	// Make UF2
 	let out = create_uf2(offset, &data);
 
 	// Save UF2 to file
-	let f = &mut fs::File::create("/tmp/out.uf2").expect("Could not open file to write");
+	let default_out = "/tmp/out.uf2".to_owned();
+	let out_file = argv.get(2).unwrap_or(&default_out);
+	let f = &mut fs::File::create(out_file).expect("Could not open file to write");
 	f.write(&out).expect("Write failed");
 }

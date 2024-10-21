@@ -77,67 +77,33 @@ const GPIO_FUNC_NULL: u32 = 0x1F;
 ///
 /// Will call all other functions and do all processing. Not named _start or
 ///  _main to avoid accidental success when linking/compiling.
-//
-// TODO: (here or in new project) Configure flash for XIP
-//
-// * Write SSI control register (INST_L = 0, ADDR_L = 32 bits, XIP_CMD = 0xa0, SPI_FRF != 0, data frame size, addr len, wait cycles, transaction type)
-// * Enable/power XIP cache (may need to do this before control register)
-/*
-  XIP_SSI->SSIENR = 0;
-
-  XIP_SSI->BAUDR = 2; // Must be even
-
-  XIP_SSI->CTRLR0 = (XIP_SSI_CTRLR0_SPI_FRF_STD << XIP_SSI_CTRLR0_SPI_FRF_Pos) |
-      (XIP_SSI_CTRLR0_TMOD_EEPROM_READ << XIP_SSI_CTRLR0_TMOD_Pos) |
-      ((32-1) << XIP_SSI_CTRLR0_DFS_32_Pos);
-
-  XIP_SSI->CTRLR1 = (0 << XIP_SSI_CTRLR1_NDF_Pos);
-
-  XIP_SSI->SPI_CTRLR0 = (0x03/*READ_DATA*/ << XIP_SSI_SPI_CTRLR0_XIP_CMD_Pos) |
-    ((24 / 4) << XIP_SSI_SPI_CTRLR0_ADDR_L_Pos) |
-    (XIP_SSI_SPI_CTRLR0_INST_L_8B << XIP_SSI_SPI_CTRLR0_INST_L_Pos) |
-    (XIP_SSI_SPI_CTRLR0_TRANS_TYPE_1C1A << XIP_SSI_SPI_CTRLR0_TRANS_TYPE_Pos);
-
-  XIP_SSI->SSIENR = XIP_SSI_SSIENR_SSI_EN_Msk;
-*/
 #[no_mangle]
 pub extern "C" fn _strat() -> ! {
-	//enable_xip();
-
 	flash_led()
-	//loop {}
+}
+
+fn enable_iobank() {
+	let resets = RESETS_BASE as *mut u32;
+	let resets_status = RESETS_RESET_DONE as *mut u32;
+
+	// (1.) Write to reset register to enable IO_BANK0 (for GPIO), then wait for ready
+	let reset_state = 0xFFFF_FFDF;
+	unsafe { resets.write_volatile(reset_state); }
+	while unsafe { resets_status.read_volatile() & 0x20 } == 0x0 {}
 }
 
 #[inline(always)]
-fn enable_xip() { unsafe {
-	let xip_ssienr = XIP_SSI_SSIENR as *mut u32;
-	let xip_ctrlr0 = XIP_SSI_CTRLR0 as *mut u32;
-	let xip_ctrlr1 = XIP_SSI_CTRLR1 as *mut u32;
-	let xip_spi_ctrlr0 = XIP_SSI_SPI_CTRLR0 as *mut u32;
-	let xip_baudr = XIP_SSI_BAUDR as *mut u32;
+fn set_led(on: bool) {
+	let pin25_ctrl = GPIO25_CTRL as *mut u32;
+	const LED_PIN_STATE_ON: u32 = 0x0000_3305;
+	const LED_PIN_STATE_OFF: u32 = 0x0000_3205;
 
-	// Disable SSI
-	xip_ssienr.write_volatile(0);
-
-	// Set baud rate (clock divider)
-	xip_baudr.write_volatile(2);
-
-	// Set SPI_RFR -> 0x0, DFS_32 -> 31, TMOD -> 0x3
-	xip_ctrlr0.write_volatile(0x001E_0300);
-
-	// Set NDF -> 0
-	xip_ctrlr1.write_volatile(0);
-
-	// Set XIP_CMD -> 0x03, ADDR_L -> 0x6, TRANS_TYPE -> 0x0
-	xip_spi_ctrlr0.write_volatile(0x0300_0218);
-
-	// Enable SSI
-	xip_ssienr.write_volatile(1);
-
-	// Jump back to memory??
-	// 0x10000100
-	asm!("b =0x10000100");
-}}
+	if on {
+		unsafe { pin25_ctrl.write_volatile(LED_PIN_STATE_ON); }
+	} else {
+		unsafe { pin25_ctrl.write_volatile(LED_PIN_STATE_OFF); }
+	}
+}
 
 #[inline(always)]
 fn flash_led() -> ! {
@@ -147,27 +113,15 @@ fn flash_led() -> ! {
 		3. Set LED pin high (turn on)
 	*/
 
-	// Make pointers for registers needed
-	let resets = RESETS_BASE as *mut u32;
-	let resets_status = RESETS_RESET_DONE as *mut u32;
+	enable_iobank();
 
-	// (1.) Write to reset register to enable IO_BANK0 (for GPIO), then wait for ready
-	let reset_state = 0xFFFF_FFDF;
-	unsafe { resets.write_volatile(reset_state); }
-	while unsafe { resets_status.read_volatile() & 0x20 } == 0x0 {
-	}
-
-	// (2., 3.) Set pin mode
-	let pin25_ctrl = GPIO25_CTRL as *mut u32;
-	const LED_PIN_STATE_ON: u32 = 0x0000_3305;
-	const LED_PIN_STATE_OFF: u32 = 0x0000_3205;
-	unsafe { pin25_ctrl.write_volatile(LED_PIN_STATE_ON); }
+	set_led(false);
 
 	// End state is infinite loop
-	let mut i;
+	let mut i: usize;
 	loop {
 		// Turn LED OFF
-		unsafe { pin25_ctrl.write_volatile(LED_PIN_STATE_OFF); }
+		set_led(true);
 
 		// Delay
 		i = 0;
@@ -177,7 +131,7 @@ fn flash_led() -> ! {
 		}
 
 		// Turn LED ON
-		unsafe { pin25_ctrl.write_volatile(LED_PIN_STATE_ON); }
+		set_led(false);
 
 		// Delay
 		i = 0;
