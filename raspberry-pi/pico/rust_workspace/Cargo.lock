@@ -3,6 +3,17 @@
 version = 3
 
 [[package]]
+name = "experiment"
+version = "0.1.0"
+dependencies = [
+ "pico",
+]
+
+[[package]]
+name = "pico"
+version = "0.1.0"
+
+[[package]]
 name = "pico_alloc"
 version = "0.1.0"
 

@@ -1,0 +1,9 @@
+[build]
+target = "thumbv6m-none-eabi"
+rustflags = [
+	"-C", "target-cpu=cortex-m0plus",
+]
+
+# TODO: Figure out env and path needed for this to work.
+#[target.thumbv6m-none-eabi]
+#runner = "make-uf2.sh"

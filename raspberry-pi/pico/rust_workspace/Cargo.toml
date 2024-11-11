@@ -4,7 +4,7 @@ members = [
 	"pico_alloc",
 	"stage2",
 	"simple"
-]
+, "experiment", "pico"]
 
 [profile.dev]
 strip = "none"
