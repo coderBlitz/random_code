@@ -19,7 +19,7 @@ const XIP_SSI_BAUDR: u32 = XIP_SSI_BASE + 0x14;
 const XIP_SSI_SPI_CTRLR0: u32 = XIP_SSI_BASE + 0xF4;
 
 const RESETS_BASE: u32 = 0x4000_C000;
-const RESETS_RESET_DONE: u32 = RESETS_BASE + 0x8;
+const RESET_DONE: u32 = RESETS_BASE + 0x8;
 
 /// The entry function on boot (as defined in picomap.ld)
 ///
@@ -93,7 +93,7 @@ fn xip() -> ! { unsafe {
 	)
 }}
 
-#[inline(always)]
+/*#[inline(always)]
 fn enable_xip() -> ! { unsafe {
 	// Set stack pointer to 0x2004_1000 (whichever end is necessary)
 	let saddr = 0x2004_0000;
@@ -172,12 +172,115 @@ fn enable_xip() -> ! { unsafe {
 		addr = in(reg) main_addr,
 		options(noreturn)
 	)
+}}*/
+
+/// Yet another attempt to get XIP working. Refer to SPI_notes.md for details.
+///
+/// The process this time:
+/// 1. Check PSM_BASE.DONE register for all needed peripheral's registers.
+/// 2. Un-reset RESETS_BASE for any needed peripherals (SPI, IO, etc.). (TODO: check if this is always before config)
+/// 3. Check RESETS_DONE register for ready status.
+/// 4. Write SSI control register (INST_L = 8 bits, ADDR_L = 24 bits, XIP_CMD = 0x03). May need to disable SSI before config.
+/// 4b. After XIP enabled (should verify with testing first), enable quad read with (INST_L = 0, ADDR_L = 32 bits, XIP_CMD = 0xa0)
+/// 5. XIP
+// TODO: Try inserting NOP delays or find status registers to check.
+#[inline(always)]
+fn enable_xip() -> ! { unsafe {
+	// Make register vars
+	let resets = RESETS_BASE as *mut u32;
+	let resets_done = RESET_DONE as *mut u32;
+	let xip_ssienr = XIP_SSI_SSIENR as *mut u32;
+	let xip_ctrl = XIP_CTRL_BASE as *mut u32;
+	let xip_ctrlr0 = XIP_SSI_CTRLR0 as *mut u32;
+	let xip_ctrlr1 = XIP_SSI_CTRLR1 as *mut u32;
+	let xip_spi_ctrlr0 = XIP_SSI_SPI_CTRLR0 as *mut u32;
+	let xip_baudr = XIP_SSI_BAUDR as *mut u32;
+
+	// Quad-mode (0x2), data frame size 32 bits (0x1F)
+	const CTRLR0: u32 = 0 | 0x2 << 21 | 0x1F << 16;
+	//
+	// See Pg. 571 and 608
+	// XIP_CMD = 0xa0, WAIT_CYCLES = 31/32 (0x1F) from DFS_32, INST_L = 0, ADDR_L = 32 bits ()
+	const SPI_CTRLR0: u32 = 0 | 0xa0 << 24 | 0x1F << 11 | 0x8 << 2;
+
+	// TODO: Check PSM and RESETS_DONE registers.
+
+	// Un-reset things
+	//const RESETS: u32 = !0 ^ (1 << 17 | 1 << 16 | 1 << 6 | 1 << 5);
+	const RESETS: u32 = 0; // Go for broke
+	resets.write_volatile(RESETS);
+
+	//while resets_done.read_volatile() != RESETS {}
+	for _ in 0..9000 {
+		nop();
+	}
+
+	// Disable SSI
+	xip_ssienr.write_volatile(0);
+
+	// Enable cache
+	xip_ctrl.write_volatile(0x1);
+
+	// TODO: Delay or check register status??
+	for _ in 0..9000 {
+		nop();
+	}
+
+	// Set baud rate (clock divider)
+	xip_baudr.write_volatile(4);
+
+	// Enable XIP with value described above.
+	xip_ctrlr0.write_volatile(CTRLR0);
+	xip_spi_ctrlr0.write_volatile(SPI_CTRLR0);
+
+	// Set NDF -> 0
+	xip_ctrlr1.write_volatile(0);
+
+	// Enable SSI
+	xip_ssienr.write_volatile(1);
+
+	// Enable cache (again)
+	xip_ctrl.write_volatile(0x1);
+
+	for _ in 0..9000 {
+		nop();
+	}
+
+	// Address for main
+	let main_addr = 0x1000_0100; // Should work because jump into RAM does. Unlikely the issue.
+
+	// Test read.
+	asm!(
+		"mov {r}, {addr}",
+		"ldr {r}, [{r}, #0]",
+		r = out(reg) _,
+		addr = in(reg) main_addr,
+	);
+
+	// Set stack address
+	let saddr = 0x2004_0000;
+	asm!(
+		"mov sp, {saddr}",
+		saddr = in(reg) saddr,
+		options(nomem)
+	);
+
+	for _ in 0..9000 {
+		nop();
+	}
+
+	// Jump to main.
+	asm!(
+		"mov pc, {addr}",
+		addr = in(reg) main_addr,
+		options(noreturn)
+	)
 }}
 
 #[inline(always)]
 fn enable_iobank() {
 	let resets = RESETS_BASE as *mut u32;
-	let resets_status = RESETS_RESET_DONE as *mut u32;
+	let resets_status = RESET_DONE as *mut u32;
 
 	// (1.) Write to reset register to enable IO_BANK0 (for GPIO), then wait for ready
 	let reset_state = 0xFFFF_FFDF;

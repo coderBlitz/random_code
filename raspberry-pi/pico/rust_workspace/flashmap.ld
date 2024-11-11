@@ -46,5 +46,7 @@ ENTRY(_strat)
 SECTIONS {
 	.text ALIGN(256) : {
 		*(.text*)
-	} > BOOT2 /* Section when loading stage 2 only */
+	/* } > BOOT2 /* Section when loading stage 2 only */
+	} > CODE /* Section when loading all non-stage 2 code */
+	/* } > SRAM /* Load to RAM */
 }
