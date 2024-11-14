@@ -10,3 +10,6 @@
 [submodule "math"]
 	path = math
 	url = git@github.com:coderBlitz/math-folder.git
+[submodule "rust"]
+	path = rust
+	url = git@github.com:coderBlitz/rust-folder.git
