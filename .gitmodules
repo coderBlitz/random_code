@@ -1,3 +1,6 @@
 [submodule "spicy_code"]
 	path = spicy_code
 	url = git@github.com:coderBlitz/spicy_code
+[submodule "advent-of-code"]
+	path = advent-of-code
+	url = git@github.com:coderBlitz/advent-of-code.git
