@@ -4,3 +4,6 @@
 [submodule "advent-of-code"]
 	path = advent-of-code
 	url = git@github.com:coderBlitz/advent-of-code.git
+[submodule "data"]
+	path = data
+	url = git@github.com:coderBlitz/data-handling.git
