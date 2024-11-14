@@ -7,3 +7,6 @@
 [submodule "data"]
 	path = data
 	url = git@github.com:coderBlitz/data-handling.git
+[submodule "math"]
+	path = math
+	url = git@github.com:coderBlitz/math-folder.git
