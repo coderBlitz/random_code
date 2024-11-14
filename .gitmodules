@@ -13,3 +13,6 @@
 [submodule "rust"]
 	path = rust
 	url = git@github.com:coderBlitz/rust-folder.git
+[submodule "raspberry-pi"]
+	path = raspberry-pi
+	url = git@github.com:coderBlitz/raspberry-pi.git

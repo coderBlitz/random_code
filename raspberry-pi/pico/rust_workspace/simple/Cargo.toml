@@ -1,8 +1,0 @@
-[package]
-name = "simple"
-version = "0.0.1"
-authors = ["Chris"]
-edition = "2021"
-description = "Simple pi pico baremetal experiment"
-
-[dependencies]

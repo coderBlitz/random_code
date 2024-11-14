@@ -1,5 +1,0 @@
-[build]
-target = "thumbv6m-none-eabi"
-rustflags = [
-	"-C", "target-cpu=cortex-m0plus"
-]
