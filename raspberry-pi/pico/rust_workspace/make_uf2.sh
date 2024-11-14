@@ -1,4 +1,6 @@
 #!/bin/bash
+# TODO: Make this script the runner for cargo (`runner` in .cargo/config.toml)
+#        to speed up compiling and loading onto pico.
 
 if [[ $1 == "" ]]; then
 	echo "Please give the path to the main binary."

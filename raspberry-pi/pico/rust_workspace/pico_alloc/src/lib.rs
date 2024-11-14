@@ -3,6 +3,8 @@
 
 // TODO: Investigate if this can be copied/initialized to memory rather than
 //        reside purely on flash.
+// NOTE: If this resides in the binary along with everything else, should get
+//        copied into RAM without issue.
 #[global_allocator]
 static MY_ALLOX: Allox = Allox::new();
 
@@ -198,7 +200,7 @@ impl Sector {
 	// Parameters of sectors (for fixed-size sectors).
 	pub const ALLOC_SIZE: usize = 256;
 	pub const CHUNK_SIZE: usize = Self::ALLOC_SIZE / (8 * core::mem::size_of::<usize>());
-	pub const BASE_ADDR: *const u8 = 0x2000_0000;
+	pub const BASE_ADDR: *const u8 = 0x2000_0000; // TODO: Allow some amount of adjustment
 
 	pub const fn from_idx(idx: usize) -> Self {
 		Sector {
