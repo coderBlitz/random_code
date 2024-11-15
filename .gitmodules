@@ -16,3 +16,6 @@
 [submodule "raspberry-pi"]
 	path = raspberry-pi
 	url = git@github.com:coderBlitz/raspberry-pi.git
+[submodule "graphics"]
+	path = graphics
+	url = git@github.com:coderBlitz/graphics-stuff.git

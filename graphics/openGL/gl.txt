@@ -1,2 +1,0 @@
-Compile OpenGL programs with:
-gcc [C File] -lglut -lGL -lGLU
