@@ -19,3 +19,6 @@
 [submodule "graphics"]
 	path = graphics
 	url = git@github.com:coderBlitz/graphics-stuff.git
+[submodule "projecteuler"]
+	path = projecteuler
+	url = git@github.com:coderBlitz/projecteuler.git
